@@ -66,6 +66,12 @@ target "_rocm_base" {
     dockerfile = "docker/rocm/Dockerfile"
 }
 
+# Base settings for Ascend NPU builds
+target "_npu_base" {
+    inherits = ["_common"]
+    dockerfile = "docker/npu/Dockerfile"
+}
+
 
 # Individual platform targets for debugging/testing
 target "cpu-amd64" {
@@ -114,6 +120,25 @@ target "rocm-amd64" {
     ]
 }
 
+# Ascend NPU targets (ARM64 for 910B series)
+target "npu" {
+    inherits = ["_npu_base"]
+    platforms = ["linux/arm64"]
+    tags = [
+        "${REGISTRY}/${OWNER}/${REPO}-npu:${VERSION}",
+        "${REGISTRY}/${OWNER}/${REPO}-npu:latest"
+    ]
+}
+
+target "npu-arm64" {
+    inherits = ["_npu_base"]
+    platforms = ["linux/arm64"]
+    tags = [
+        "${REGISTRY}/${OWNER}/${REPO}-npu:${VERSION}-arm64",
+        "${REGISTRY}/${OWNER}/${REPO}-npu:latest-arm64"
+    ]
+}
+
 # Development targets for faster local builds
 target "cpu-dev" {
     inherits = ["_cpu_base"]
@@ -144,10 +169,14 @@ group "rocm-all" {
     targets = ["rocm-amd64"]
 }
 
+group "npu-all" {
+    targets = ["npu", "npu-arm64"]
+}
+
 group "all" {
-    targets = ["cpu", "gpu", "rocm"]
+    targets = ["cpu", "gpu", "rocm", "npu"]
 }
 
 group "individual-platforms" {
-    targets = ["cpu-amd64", "cpu-arm64", "gpu-amd64", "gpu-arm64", "rocm-amd64"]
+    targets = ["cpu-amd64", "cpu-arm64", "gpu-amd64", "gpu-arm64", "rocm-amd64", "npu-arm64"]
 }

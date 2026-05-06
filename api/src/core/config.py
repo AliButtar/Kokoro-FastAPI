@@ -80,6 +80,16 @@ class Settings(BaseSettings):
             return "mps"
         elif torch.cuda.is_available():
             return "cuda"
+
+        # Check for Ascend NPU (requires torch_npu to be installed)
+        try:
+            import torch_npu  # noqa: F401
+
+            if torch.npu.is_available():
+                return "npu:0"
+        except (ImportError, AttributeError):
+            pass
+
         return "cpu"
 
 

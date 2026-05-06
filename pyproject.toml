@@ -49,6 +49,10 @@ rocm = [
     "torch==2.8.0+rocm6.4",
     "pytorch-triton-rocm>=3.2.0",
 ]
+npu = [
+    "torch==2.5.1",
+    "torch-npu==2.5.1",
+]
 test = [
     "pytest==8.3.5",
     "pytest-cov==6.0.0",
@@ -64,6 +68,7 @@ conflicts = [
         { extra = "cpu" },
         { extra = "gpu" },
         { extra = "rocm" },
+        { extra = "npu" },
     ],
 ]
 override-dependencies = [
@@ -75,6 +80,7 @@ torch = [
     { index = "pytorch-cpu", extra = "cpu" },
     { index = "pytorch-cuda", extra = "gpu" },
     { index = "pytorch-rocm", extra = "rocm" },
+    { index = "pytorch-cpu", extra = "npu" },
 ]
 pytorch-triton-rocm = [
     { index = "pytorch-rocm", extra = "rocm" },
