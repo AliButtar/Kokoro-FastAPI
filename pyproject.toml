@@ -50,8 +50,8 @@ rocm = [
     "pytorch-triton-rocm>=3.2.0",
 ]
 npu = [
-    "torch==2.5.1",
-    "torch-npu==2.5.1",
+    "torch==2.6.0",
+    "torch-npu==2.6.0",
 ]
 test = [
     "pytest==8.3.5",

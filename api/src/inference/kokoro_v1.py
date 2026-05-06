@@ -181,7 +181,7 @@ class KokoroV1(BaseModelBackend):
                     tokens, voice, speed, lang_code
                 ):
                     yield chunk
-            elif self._device.startswith("npu") and is_oom:
+            elif self._device.startswith("npu") and model_config.pytorch_gpu.retry_on_oom and is_oom:
                 self._clear_memory()
                 async for chunk in self.generate_from_tokens(
                     tokens, voice, speed, lang_code
@@ -333,7 +333,7 @@ class KokoroV1(BaseModelBackend):
                 self._clear_memory()
                 async for chunk in self.generate(text, voice, speed, lang_code):
                     yield chunk
-            elif self._device.startswith("npu") and "out of memory" in str(e).lower():
+            elif self._device.startswith("npu") and model_config.pytorch_gpu.retry_on_oom and "out of memory" in str(e).lower():
                 self._clear_memory()
                 async for chunk in self.generate(text, voice, speed, lang_code):
                     yield chunk
@@ -346,6 +346,7 @@ class KokoroV1(BaseModelBackend):
             return memory_gb > model_config.pytorch_gpu.memory_threshold
         if self._device.startswith("npu"):
             try:
+                # Reuse pytorch_gpu.memory_threshold as the shared memory-pressure threshold
                 memory_gb = torch.npu.memory_allocated() / 1e9
                 return memory_gb > model_config.pytorch_gpu.memory_threshold
             except AttributeError:
