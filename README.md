@@ -14,7 +14,7 @@
 
 Dockerized FastAPI wrapper for [Kokoro-82M](https://huggingface.co/hexgrad/Kokoro-82M) text-to-speech model
 - Multi-language support (English, Japanese, Chinese, _Vietnamese soon_)
-- OpenAI-compatible Speech endpoint, NVIDIA GPU accelerated or CPU inference with PyTorch 
+- OpenAI-compatible Speech endpoint, NVIDIA GPU accelerated, Huawei Ascend NPU, or CPU inference with PyTorch
 - ONNX support coming soon, see v0.1.5 and earlier for legacy ONNX support in the interim
 - Debug endpoints for monitoring system stats, integrated web UI on localhost:8880/web
 - Phoneme-based audio generation, phoneme generation
@@ -40,6 +40,8 @@ Refer to the core/config.py file for a full list of variables which can be manag
 
 docker run -p 8880:8880 ghcr.io/remsky/kokoro-fastapi-cpu:latest # CPU, or:
 docker run --gpus all -p 8880:8880 ghcr.io/remsky/kokoro-fastapi-gpu:latest  #NVIDIA GPU
+
+# Huawei Ascend NPU: no pre-built image is provided — build from source instead (see docker compose below)
 ```
 
 
@@ -56,8 +58,10 @@ docker run --gpus all -p 8880:8880 ghcr.io/remsky/kokoro-fastapi-gpu:latest  #NV
         git clone https://github.com/remsky/Kokoro-FastAPI.git
         cd Kokoro-FastAPI
 
-        cd docker/gpu  # For GPU support
+        cd docker/gpu  # For NVIDIA GPU support
         # or cd docker/cpu  # For CPU support
+        # or cd docker/rocm  # For AMD ROCm GPU support
+        # or cd docker/npu  # For Huawei Ascend NPU support (linux/arm64)
         docker compose up --build
 
         # *Note for Apple Silicon (M1/M2) users:
@@ -69,8 +73,9 @@ docker run --gpus all -p 8880:8880 ghcr.io/remsky/kokoro-fastapi-gpu:latest  #NV
         python docker/scripts/download_model.py --output api/src/models/v1_0
 
         # Or run directly via UV:
-        ./start-gpu.sh  # For GPU support
+        ./start-gpu.sh  # For NVIDIA GPU support
         ./start-cpu.sh  # For CPU support
+        ./start-npu.sh  # For Huawei Ascend NPU support
         ```
 </details>
 <details>
@@ -92,13 +97,14 @@ docker run --gpus all -p 8880:8880 ghcr.io/remsky/kokoro-fastapi-gpu:latest  #NV
         Linux and macOS
         ```bash
         ./start-cpu.sh OR
-        ./start-gpu.sh 
+        ./start-gpu.sh OR
+        ./start-npu.sh  # Huawei Ascend NPU (linux/arm64)
         ```
 
         Windows
         ```powershell
         .\start-cpu.ps1 OR
-        .\start-gpu.ps1 
+        .\start-gpu.ps1
         ```
 
 </details>
@@ -366,6 +372,14 @@ docker compose up --build
 cd docker/cpu
 docker compose up --build
 
+# ROCm: AMD GPU via ROCm
+cd docker/rocm
+docker compose up --build
+
+# NPU: Huawei Ascend NPU (linux/arm64, CANN 8.5)
+cd docker/npu
+docker compose up --build
+
 ```
 *Note: Overall speed may have reduced somewhat with the structural changes to accommodate streaming. Looking into it* 
 </details>
@@ -531,7 +545,8 @@ Linux and macOS
 ```bash
 export API_LOG_LEVEL=WARNING
 ./start-cpu.sh OR
-./start-gpu.sh
+./start-gpu.sh OR
+./start-npu.sh
 ```
 
 Windows
