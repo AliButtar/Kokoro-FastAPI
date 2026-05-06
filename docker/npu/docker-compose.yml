@@ -1,0 +1,44 @@
+name: kokoro-fastapi-npu
+services:
+  kokoro-tts:
+    build:
+      context: ../..
+      dockerfile: docker/npu/Dockerfile
+    volumes:
+      - ../../api:/app/api
+      # Mount the host Ascend driver so the container can communicate with the NPU
+      - /usr/local/Ascend/driver:/usr/local/Ascend/driver:ro
+    # Ascend NPU device files required for CANN / torch_npu
+    devices:
+      - /dev/davinci0
+      - /dev/davinci_manager
+      - /dev/devmm_svm
+      - /dev/hisi_hdc
+    ports:
+      - "8880:8880"
+    environment:
+      - PYTHONPATH=/app:/app/api
+      - USE_GPU=true
+      - DEVICE_TYPE=npu:0
+      - PYTHONUNBUFFERED=1
+      # Restrict visibility to NPU device 0 (comma-separate for multiple NPUs, e.g. "0,1")
+      - ASCEND_RT_VISIBLE_DEVICES=0
+      - API_LOG_LEVEL=DEBUG
+
+  # # Gradio UI service [Comment out everything below if you don't need it]
+  # gradio-ui:
+  #   image: ghcr.io/remsky/kokoro-fastapi-ui:v${VERSION}
+  #   # Uncomment below (and comment out above) to build from source instead of using the released image
+  #   build:
+  #     context: ../../ui
+  #   ports:
+  #     - "7860:7860"
+  #   volumes:
+  #     - ../../ui/data:/app/ui/data
+  #     - ../../ui/app.py:/app/app.py  # Mount app.py for hot reload
+  #   environment:
+  #     - GRADIO_WATCH=True  # Enable hot reloading
+  #     - PYTHONUNBUFFERED=1  # Ensure Python output is not buffered
+  #     - DISABLE_LOCAL_SAVING=false  # Set to 'true' to disable local saving and hide file view
+  #     - API_HOST=kokoro-tts  # Set TTS service URL
+  #     - API_PORT=8880  # Set TTS service PORT
